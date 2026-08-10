@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>¡Adiviná la canción!</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:radial-gradient(circle at top,#fff8d9,#dff5ff 45%,#eadfff);color:#29314d}
+.wrap{max-width:1100px;margin:auto;padding:28px 22px}h1{margin:0;text-align:center;font-size:clamp(34px,5vw,58px);color:#4b3f9f;text-shadow:2px 3px #fff}.sub{text-align:center;font-size:20px;font-weight:700;margin:8px 0 22px}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:900px;margin:auto}.tile{border:0;min-height:145px;border-radius:28px;cursor:pointer;background:linear-gradient(145deg,#fff,#f0ecff);box-shadow:0 9px 0 rgba(75,63,159,.18),0 14px 28px rgba(40,30,80,.12);font-size:42px;font-weight:900;color:#4b3f9f;transition:.15s}.tile:hover{transform:translateY(-5px)}.tile.used{opacity:.3;cursor:default;transform:none}.note{display:block;font-size:44px}.tile small{display:block;font-size:16px;color:#69728a;margin-top:4px}
+.reset{border:0;border-radius:17px;padding:13px 24px;font-size:18px;font-weight:900;background:#4b3f9f;color:white;cursor:pointer;box-shadow:0 5px #30296f}.controls{text-align:center;margin-top:23px}
+.modal{position:fixed;inset:0;background:rgba(26,25,55,.94);display:none;align-items:center;justify-content:center;z-index:10}.modal.open{display:flex}.card{width:min(800px,90vw);padding:40px;border-radius:32px;background:#fff;text-align:center;box-shadow:0 20px 70px #0008}.music{font-size:90px;line-height:1;margin-bottom:15px}.playing{font-size:32px;font-weight:900;color:#4b3f9f}.dots{font-size:30px;letter-spacing:8px;margin:20px}.back{border:0;border-radius:18px;padding:14px 30px;font-size:20px;font-weight:900;background:#4b3f9f;color:#fff;cursor:pointer}
+#player{position:absolute;width:2px;height:2px;left:-10px;top:-10px;opacity:.01;pointer-events:none}
+@media(max-width:700px){.board{grid-template-columns:repeat(2,1fr)}.tile{min-height:125px}}
+</style></head>
+<body><div class="wrap"><h1>🎵 ¡ADIVINÁ LA CANCIÓN! 🎵</h1><div class="sub">Elegí un casillero y escuchá con atención...</div>
+<div id="board" class="board"></div><div class="controls"><button class="reset" onclick="resetGame()">🔀 Mezclar de nuevo</button></div></div>
+<div id="modal" class="modal"><div class="card"><div class="music">🎶</div><div class="playing">¡ESCUCHÁ CON ATENCIÓN!</div><div class="dots">♪ ♫ ♪ ♫ ♪</div><p>¿Qué canción de Disney será?</p><button class="back" onclick="closeModal()">↩ VOLVER AL JUEGO</button></div></div>
+<div id="player"></div>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+const songs=[{"title": "Let It Go", "movie": "Frozen", "id": "YVVTZgwYwVo"}, {"title": "We Don't Talk About Bruno", "movie": "Encanto", "id": "bvWRMAU6V-c"}, {"title": "You've Got a Friend in Me", "movie": "Toy Story", "id": "1MPZRcyTrcU"}, {"title": "How Far I'll Go", "movie": "Moana", "id": "cPAbx5kgCJo"}, {"title": "You're Welcome", "movie": "Moana", "id": "79DijItQXMM"}, {"title": "A Whole New World", "movie": "Aladdin", "id": "eitDnP0_83k"}, {"title": "Part of Your World", "movie": "The Little Mermaid", "id": "SXKlJuO07eM"}, {"title": "Under the Sea", "movie": "The Little Mermaid", "id": "f5NInsk3sJk"}, {"title": "I See the Light", "movie": "Tangled", "id": "ILRs2r6lcHY"}, {"title": "Beauty and the Beast", "movie": "Beauty and the Beast", "id": "vScUbKoE-qs"}, {"title": "Remember Me", "movie": "Coco", "id": "ImutnoiBixY"}, {"title": "Into the Unknown", "movie": "Frozen II", "id": "gIOyB9ZXn8s"}, {"title": "Hakuna Matata", "movie": "The Lion King", "id": "U-fR1JUS450"}, {"title": "Circle of Life", "movie": "The Lion King", "id": "GibiNy4d4gc"}, {"title": "When Will My Life Begin?", "movie": "Tangled", "id": "kRXmAIHYQR4"}, {"title": "Almost There", "movie": "The Princess and the Frog", "id": "ThMwHKfzz1I"}];let deck=[],used=new Set(),player=null,current=null;
+function onYouTubeIframeAPIReady(){player=new YT.Player('player',{height:'2',width:'2',videoId:'',playerVars:{autoplay:0,controls:0,rel:0,playsinline:1,modestbranding:1,origin:location.origin},events:{onReady:()=>{}}});}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function resetGame(){deck=shuffle([...songs]);used=new Set();render()}
+function render(){let b=document.getElementById('board');b.innerHTML='';deck.forEach((s,i)=>{let x=document.createElement('button');x.className='tile'+(used.has(i)?' used':'');x.disabled=used.has(i);x.innerHTML='<span class="note">♪</span>'+(i+1)+'<small>TOCÁ ACÁ</small>';x.onclick=()=>play(i);b.appendChild(x)})}
+function play(i){if(used.has(i))return;used.add(i);render();current=deck[i];document.getElementById('modal').classList.add('open');if(player){player.loadVideoById({videoId:current.id});player.playVideo();}}
+function closeModal(){if(player)player.stopVideo();document.getElementById('modal').classList.remove('open')}
+resetGame();
+</script></body></html>
